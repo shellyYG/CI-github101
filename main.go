@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func main() {
-	fmt.Println("start")
+	trimmed := trimWords("ATB124")
+	fmt.Println(trimmed)
+}
+
+func trimWords(words string) string {
+	return strings.TrimPrefix(words, "ATB")
 }
