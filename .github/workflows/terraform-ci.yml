@@ -24,6 +24,10 @@ jobs:
     - name: Setup Terraform CLI on the runner
       uses: hashicorp/setup-terraform@v1
 
+    - name: Debug
+      run:
+        echo "GitHub Ref: ${{ github.ref }}"
+
     - name: Determine Environment
       id: vars
       run: |
