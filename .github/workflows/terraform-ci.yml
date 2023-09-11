@@ -46,16 +46,8 @@ jobs:
           echo "##[set-output name=env;]none"
         fi
 
-    - name: Terraform Init
-      if: steps.vars.outputs.env != 'none'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-
     - name: Terraform Plan after PR opened (before merged)
-      if: github.event_name == 'pull_request' && steps.vars.outputs.env != 'none'
+      if: github.event_name == 'pull_request'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
         terraform init
