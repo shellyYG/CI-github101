@@ -7,8 +7,14 @@ terraform {
   }
 }
 
+provider "google" {
+  project = local.project
+  region  = local.region
+}
+
 locals {
-  project         = "terraform-github-actions"
+  project  = "terraform-github-actions"
+  region   = "europe-west2"
 }
 
 resource "google_storage_bucket" "gcs_bucket" {
