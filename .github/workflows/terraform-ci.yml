@@ -14,60 +14,55 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform'
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Setup Terraform CLI on the runner
-      uses: hashicorp/setup-terraform@v1
+      - name: Setup Terraform CLI on the runner
+        uses: hashicorp/setup-terraform@v1
 
-    - name: Debug
-      run:
-        echo "GitHub Ref: ${{ github.ref }}"
-        echo "GitHub Event: ${{ github.event_name }}"
+      - name: Debug
+        run: echo "GitHub Ref: ${{ github.ref }}" && echo "GitHub Event: ${{ github.event_name }}"
 
-    - name: Determine Environment
-      id: vars
-      run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "Current branch is main"
-          echo "##[set-output name=env;]production"
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-          echo "Current branch is dev"
-          echo "##[set-output name=env;]dev"
-        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-          echo "Current branch is staging"
-          echo "##[set-output name=env;]staging"
-        else
-          echo "Not a deployable branch"
-          echo "##[set-output name=env;]none"
-        fi
-    
-    - name: Terraform Init
-      if: steps.vars.outputs.env != 'none'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Determine Environment
+        id: vars
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "Current branch is main"
+            echo "##[set-output name=env;]production"
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "Current branch is dev"
+            echo "##[set-output name=env;]dev"
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "Current branch is staging"
+            echo "##[set-output name=env;]staging"
+          else
+            echo "Not a deployable branch"
+            echo "##[set-output name=env;]none"
+          fi
 
-    - name: Terraform Plan after PR opened (before merged)
-      if: github.event_name == 'pull_request' && steps.vars.outputs.env != 'none'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-        terraform plan
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Terraform Init
+        if: steps.vars.outputs.env != 'none'
+        run: |
+          cd environments/${{ steps.vars.outputs.env }}
+          terraform init
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Terraform Apply after PR merged
-      if: github.event_name == 'push' && steps.vars.outputs.env != 'none' && github.event_name == 'push'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-        terraform apply -auto-approve
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request' && steps.vars.outputs.env != 'none'
+        run: |
+          cd environments/${{ steps.vars.outputs.env }}
+          terraform plan
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Terraform Apply
+        if: github.event_name == 'push' && steps.vars.outputs.env != 'none'
+        run: |
+          cd environments/${{ steps.vars.outputs.env }}
+          terraform apply -auto-approve
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
