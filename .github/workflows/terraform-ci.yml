@@ -3,8 +3,14 @@ name: 'Terraform CI'
 on:
   push:
     branches:
-    - main
+      - main
+      - dev
+      - staging
   pull_request:
+    branches:
+      - main
+      - dev
+      - staging
 
 jobs:
   terraform:
@@ -17,19 +23,44 @@ jobs:
 
     - name: Setup Terraform CLI on the runner
       uses: hashicorp/setup-terraform@v1
+
+    - name: Determine Environment
+      id: vars
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "Current branch is main"
+          echo "##[set-output name=env;]production"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "Current branch is dev"
+          echo "##[set-output name=env;]dev"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          echo "Current branch is staging"
+          echo "##[set-output name=env;]staging"
+        else
+          echo "Not a deployable branch"
+          echo "##[set-output name=env;]none"
+        fi
     
     - name: Terraform Init
-      run: terraform init
+      if: steps.vars.outputs.env != 'none'
+      run: |
+        cd environments/${{ steps.vars.outputs.env }}
+        terraform init
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Terraform Plan
-      run: terraform plan
+      if: steps.vars.outputs.env != 'none'
+      run: |
+        cd environments/${{ steps.vars.outputs.env }}
+        terraform plan
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Terraform Apply only on PR
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve
+      if: steps.vars.outputs.env != 'none' && github.event_name == 'push'
+      run: |
+        cd environments/${{ steps.vars.outputs.env }}
+        terraform apply -auto-approve
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
