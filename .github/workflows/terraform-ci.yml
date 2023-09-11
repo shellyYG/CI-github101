@@ -27,6 +27,7 @@ jobs:
     - name: Debug
       run:
         echo "GitHub Ref: ${{ github.ref }}"
+        echo "GitHub Event: ${{ github.event_name }}"
 
     - name: Determine Environment
       id: vars
@@ -53,18 +54,20 @@ jobs:
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Terraform Plan
-      if: steps.vars.outputs.env != 'none'
+    - name: Terraform Plan after PR opened (before merged)
+      if: github.event_name == 'pull_request' && steps.vars.outputs.env != 'none'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
+        terraform init
         terraform plan
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Terraform Apply only on PR
-      if: steps.vars.outputs.env != 'none' && github.event_name == 'push'
+    - name: Terraform Apply after PR merged
+      if: github.event_name == 'push' && steps.vars.outputs.env != 'none' && github.event_name == 'push'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
+        terraform init
         terraform apply -auto-approve
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
