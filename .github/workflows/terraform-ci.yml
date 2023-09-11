@@ -1,4 +1,4 @@
-name: 'Terraform CI'
+name: 'Terraform CI (Deploy)'
 
 on:
   push:
@@ -25,37 +25,29 @@ jobs:
       uses: hashicorp/setup-terraform@v1
 
     - name: Debug
-      run:
+      run: |
         echo "GitHub Ref: ${{ github.ref }}"
         echo "GitHub Event: ${{ github.event_name }}"
 
     - name: Determine Environment
       id: vars
       run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "Current branch is main"
+        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
+          echo "Current push branch / Current target branch to merge is: main"
           echo "##[set-output name=env;]production"
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-          echo "Current branch is dev"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.pull_request.base.ref }}" == "dev" ]]; then
+          echo "Current push branch / Current target branch to merge is: dev"
           echo "##[set-output name=env;]dev"
-        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-          echo "Current branch is staging"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" || "${{ github.event.pull_request.base.ref }}" == "staging" ]]; then
+          echo "Current push branch / Current target branch to merge is: staging"
           echo "##[set-output name=env;]staging"
         else
           echo "Not a deployable branch"
           echo "##[set-output name=env;]none"
         fi
-    
-    - name: Terraform Init
-      if: steps.vars.outputs.env != 'none'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Terraform Plan after PR opened (before merged)
-      if: github.event_name == 'pull_request' && steps.vars.outputs.env != 'none'
+      if: github.event_name == 'pull_request'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
         terraform init
@@ -64,7 +56,7 @@ jobs:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Terraform Apply after PR merged
-      if: github.event_name == 'push' && steps.vars.outputs.env != 'none' && github.event_name == 'push'
+      if: github.event_name == 'push' && steps.vars.outputs.env != 'none'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
         terraform init
