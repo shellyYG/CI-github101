@@ -1,5 +1,10 @@
 # CI-github101
 
+## Workflows
+- Go compile and test CI will run on every commit on every branch.
+- Terraform deployment CI will only run when pushing to dev/staging/main branch, or, when opening a pull request targeting to merge to dev/staging/main branch
+
+
 ## Authentication
 ### Create a gcp-credentials.json file 
 - since we can't use `gcloud auth application-default login` like at local, we need a service account key stored as a json file
