@@ -23,10 +23,9 @@ vi gcp-credential.json
 ```
 
 ### Use the one-line JSON file as secret for the repo
-Go to the corresponding repo -> Settings -> Secrets and variables -> New Repository Secret
-https://github.com/shellyYG/CI-github101/settings/secrets/actions
-Set the secret name as `GOOGLE_CREDENTIALS`
-Value you can copy from the value of running:
+- Go to the corresponding repository -> Settings -> Secrets and variables -> New Repository Secret
+- Set the secret name as `GOOGLE_CREDENTIALS`
+- Copy the value from running below script as the value for the secret name `GOOGLE_CREDENTIALS`:
 ```shell
 cat gcp-credentials.json
 ```
