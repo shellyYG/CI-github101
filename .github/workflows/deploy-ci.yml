@@ -63,6 +63,11 @@ jobs:
     - name: 'Use gcloud CLI'
       run: 'gcloud info'
 
+    - name: Deploy to GCP
+      run: |
+        chmod +x ./deploy.sh  # make sure the script is executable
+        ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
+
   terraform-ci:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
