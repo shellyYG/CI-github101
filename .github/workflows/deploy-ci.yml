@@ -52,7 +52,7 @@ jobs:
 
     - name: Setup Google Cloud CLI
       id: auth
-      if: $steps.vars.outputs.project != 'none'
+      if: steps.vars.outputs.project != 'none'
       run: |
         echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
         gcloud auth activate-service-account --key-file=gcp-key.json
