@@ -60,7 +60,7 @@ jobs:
         gcloud config set project ${{ env.GCP_PROJECT }}
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        GCP_PROJECT: $steps.vars.outputs.project
+        GCP_PROJECT: ${{ steps.vars.outputs.project }}
 
   terraform-ci:
     name: 'deploy-terraform'
