@@ -51,7 +51,7 @@ jobs:
       run: |
         echo "Project ID: ${{ steps.vars.outputs.project }}"
 
-    - name: Setup Google Cloud CLI way 1
+    - name: Setup Google Cloud CLI
       id: 'auth'
       uses: 'google-github-actions/auth@v1'
       with:
@@ -62,17 +62,6 @@ jobs:
 
     - name: 'Use gcloud CLI'
       run: 'gcloud info'
-
-    - name: Setup Google Cloud CLI way 2
-      id: auth2
-      if: steps.vars.outputs.project != 'none'
-      run: |
-        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
-        gcloud auth activate-service-account --key-file=gcp-key.json
-        gcloud config set project ${{ env.GCP_PROJECT }}
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        GCP_PROJECT: ${{ steps.vars.outputs.project }}
 
   terraform-ci:
     name: 'deploy-terraform'
