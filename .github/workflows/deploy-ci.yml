@@ -13,9 +13,57 @@ on:
       - staging
 
 jobs:
-  terraform:
+  deploy-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.15'
+
+    - name: Check branch name
+      run: |
+        echo "GitHub Ref: ${{ github.ref }}"
+        echo "GitHub Event: ${{ github.event_name }}"
+
+    - name: Determine Environment
+      id: vars
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
+          echo "Current push branch / Current target branch to merge is: main"
+          echo "##[set-output name=project;]data-integration-production"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.pull_request.base.ref }}" == "dev" ]]; then
+          echo "Current push branch / Current target branch to merge is: dev"
+          echo "##[set-output name=project;]data-integration-development"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" || "${{ github.event.pull_request.base.ref }}" == "staging" ]]; then
+          echo "Current push branch / Current target branch to merge is: staging"
+          echo "##[set-output name=project;]data-integration-staging"
+        else
+          echo "Not a deployable branch"
+          echo "##[set-output name=project;]none"
+        fi
+
+    - name: Check project ID
+      run: |
+        echo "Project ID: $steps.vars.outputs.project"
+
+    - name: Setup Google Cloud CLI
+      if: $steps.vars.outputs.project != 'none'
+      run: |
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
+        gcloud auth activate-service-account --key-file=gcp-key.json
+        gcloud config set project ${{ env.GCP_PROJECT }}
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        GCP_PROJECT: $steps.vars.outputs.project
+
+  terraform-ci:
     name: 'Terraform'
     runs-on: ubuntu-latest
+    needs: deploy-docker
 
     steps:
     - name: Checkout
