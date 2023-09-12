@@ -51,6 +51,7 @@ jobs:
         echo "Project ID: $steps.vars.outputs.project"
 
     - name: Setup Google Cloud CLI
+      id: auth
       if: $steps.vars.outputs.project != 'none'
       run: |
         echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
