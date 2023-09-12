@@ -64,7 +64,7 @@ jobs:
       run: 'gcloud info'
 
     - name: Setup Google Cloud CLI way 2
-      id: auth
+      id: auth2
       if: steps.vars.outputs.project != 'none'
       run: |
         echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
