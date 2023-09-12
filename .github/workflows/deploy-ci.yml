@@ -14,6 +14,7 @@ on:
 
 jobs:
   deploy-docker:
+    name: 'deploy-docker'
     runs-on: ubuntu-latest
 
     steps:
@@ -48,7 +49,7 @@ jobs:
 
     - name: Check project ID
       run: |
-        echo "Project ID: $steps.vars.outputs.project"
+        echo "Project ID: ${{ steps.vars.outputs.project }}"
 
     - name: Setup Google Cloud CLI
       id: auth
@@ -62,7 +63,7 @@ jobs:
         GCP_PROJECT: $steps.vars.outputs.project
 
   terraform-ci:
-    name: 'Terraform'
+    name: 'deploy-terraform'
     runs-on: ubuntu-latest
     needs: deploy-docker
 
