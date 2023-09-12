@@ -51,7 +51,19 @@ jobs:
       run: |
         echo "Project ID: ${{ steps.vars.outputs.project }}"
 
-    - name: Setup Google Cloud CLI
+    - name: Setup Google Cloud CLI way 1
+      id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+
+    - name: 'Use gcloud CLI'
+      run: 'gcloud info'
+
+    - name: Setup Google Cloud CLI way 2
       id: auth
       if: steps.vars.outputs.project != 'none'
       run: |
