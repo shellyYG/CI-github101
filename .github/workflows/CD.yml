@@ -71,9 +71,6 @@ jobs:
         chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
         ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
 
-    - name: Change Docker Image Digest in Terraform file
-      run: |
-        sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
 
     - name: Set Git identity
       run: |
@@ -84,6 +81,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
+    - name: Change Docker Image Digest in Terraform file
+      run: |
+        sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
 
     - name: Commit and Push Changes
       run: |
