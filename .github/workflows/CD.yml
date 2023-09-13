@@ -73,7 +73,7 @@ jobs:
 
     - name: Change Docker Image Digest in Terraform file
       run: |
-        sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
+        sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
 
     - name: Commit and Push Changes
       run: |
