@@ -80,6 +80,11 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
 
+    - name: Checkout to current branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
     - name: Commit and Push Changes
       run: |
         git add ./environments/dev/main.tf
