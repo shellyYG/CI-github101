@@ -75,6 +75,11 @@ jobs:
       run: |
         sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
 
+    - name: Set Git identity
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
     - name: Commit and Push Changes
       run: |
         git add ./environments/dev/main.tf
