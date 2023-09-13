@@ -1,4 +1,4 @@
-name: 'Terraform CI (Deploy)'
+name: 'Deployment'
 
 on:
   push:
@@ -65,8 +65,8 @@ jobs:
 
     - name: Deploy to GCP
       run: |
-        chmod +x ../../deploy.sh  # make sure the script is executable
-        ../../deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
+        chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
+        ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
 
   terraform-ci:
     name: 'deploy-terraform'
