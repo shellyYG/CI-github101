@@ -72,7 +72,7 @@ jobs:
         ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
 
 
-    - name: Set Git identity
+    - name: Set Git identity to GitHub Action
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
