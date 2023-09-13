@@ -63,6 +63,12 @@ jobs:
     - name: 'Use gcloud CLI'
       run: 'gcloud info'
 
+    - name: Debug - Show current directory
+      run: pwd
+
+    - name: Debug - List files
+      run: ls -l
+
     - name: Deploy to GCP
       run: |
         chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
