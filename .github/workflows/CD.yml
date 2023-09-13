@@ -84,7 +84,7 @@ jobs:
       run: |
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
-        git push origin ${GITHUB_REF#refs/heads/}
+        git push origin ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
 
   deploy-terraform:
