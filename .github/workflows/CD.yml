@@ -8,7 +8,7 @@ on:
       - staging
   pull_request:
     types:
-      - closed
+      - opened
     branches:
       - main
       - dev
@@ -48,9 +48,6 @@ jobs:
     - name: Debug - Show Environment to deploy
       run: |
         echo "Environment to deploy: ${{ steps.vars.outputs.project }}"
-    
-    - name: Debug - Show GitHub context
-      run: echo "${{ toJson(github) }}"
 
     - name: Extract Service Name
       run: |
