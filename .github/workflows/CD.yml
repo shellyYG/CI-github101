@@ -57,9 +57,7 @@ jobs:
         fi
         echo "Title: $title"
         first_line=$(echo "$title" | head -n1)
-        echo "First line: $first_line"
         service_name=$(echo "$first_line" | awk -F': ' '{print $1}' | tr -d '[:space:]')
-        echo "Intermediate service name: $service_name"
         echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
 
     - name: Debug - Show Service to deploy
