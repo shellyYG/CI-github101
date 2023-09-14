@@ -18,6 +18,7 @@ jobs:
   deploy-docker:
     name: 'deploy-docker'
     runs-on: ubuntu-latest
+    if: github.event_name = 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
     - name: Checkout
@@ -35,14 +36,14 @@ jobs:
     - name: Determine Environment
       id: vars
       run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
-          echo "Current push branch / Current target branch to merge is: main"
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "Current commit branch or Current target branch to merge is: main"
           echo "##[set-output name=project;]terraform-github-actions"
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.pull_request.base.ref }}" == "dev" ]]; then
-          echo "Current push branch / Current target branch to merge is: dev"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "Current commit branch / Current target branch to merge is: dev"
           echo "##[set-output name=project;]terraform-github-actions"
-        elif [[ "${{ github.ref }}" == "refs/heads/staging" || "${{ github.event.pull_request.base.ref }}" == "staging" ]]; then
-          echo "Current push branch / Current target branch to merge is: staging"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          echo "Current commit branch / Current target branch to merge is: staging"
           echo "##[set-output name=project;]terraform-github-actions"
         else
           echo "Not a deployable branch"
