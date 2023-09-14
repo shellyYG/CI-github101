@@ -48,7 +48,10 @@ jobs:
     - name: Debug - Show Environment to deploy
       run: |
         echo "Environment to deploy: ${{ steps.vars.outputs.project }}"
-      
+    
+    - name: Debug - Show GitHub context
+      run: echo "${{ toJson(github) }}"
+
     - name: Extract Service Name
       run: |
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
