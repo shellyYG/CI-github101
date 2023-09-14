@@ -140,4 +140,5 @@ fi
 echo "Successfully deployed Image to Artifact Registry"
 echo "Latest Image for Terraform:"
 echo "$LATEST_IMAGE"
+echo "$LATEST_IMAGE" > ./file.txt
 exit 0

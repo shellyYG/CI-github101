@@ -105,6 +105,9 @@ jobs:
         chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
         ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
 
+    - name: Set New Hash from file
+      if: env.VALID_SERVICE == 'true'
+      run: echo "NEW_IMAGE_HASH=$(cat ./file.txt)" >> $GITHUB_ENV
 
     - name: Set Git identity to GitHub Action
       if: env.VALID_SERVICE == 'true'
@@ -117,11 +120,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-
-    - name: Change Docker Image Digest in Terraform file
+   
+    - name: Change Image Digest in Terraform file
       if: env.VALID_SERVICE == 'true'
       run: |
-        sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
+        awk -v hash="$NEW_IMAGE_HASH" '/module "chicargo_carlo_disposition"/,/}/ { if(/image\s+=\s+/) { sub(/@sha256:.*/, "@sha256:" hash); } }1' ./environments/dev/main.tf > ./environments/dev/main.tmp && mv ./environments/dev/main.tmp ./environments/dev/main.tf
 
     - name: Commit and Push Changes
       if: env.VALID_SERVICE == 'true'
