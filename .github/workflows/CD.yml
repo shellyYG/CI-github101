@@ -44,7 +44,7 @@ jobs:
       run: |
         echo "Environment to deploy: ${{ steps.vars.outputs.project }}"
 
-    - name: Extract Service Name
+    - name: Extract Service Name from title
       run: |
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           title="${{ github.event.pull_request.title }}"
