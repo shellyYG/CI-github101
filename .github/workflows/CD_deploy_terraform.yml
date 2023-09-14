@@ -43,8 +43,7 @@ jobs:
           echo "##[set-output name=env;]none"
         fi
 
-    - name: Terraform Plan after PR opened (before merged)
-      if: github.event_name == 'pull_request'
+    - name: Terraform Plan
       run: |
         cd environments/${{ steps.vars.outputs.env }}
         terraform init
@@ -52,7 +51,7 @@ jobs:
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Terraform Apply after PR merged
+    - name: Terraform Apply
       if: github.event_name == 'push' && steps.vars.outputs.env != 'none'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
