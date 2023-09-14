@@ -22,10 +22,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.15'
 
     - name: Determine Environment
       id: vars
@@ -60,9 +56,23 @@ jobs:
         service_name=$(echo "$first_line" | awk -F': ' '{print $1}' | tr -d '[:space:]')
         echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
 
+        # Validate the service name
+        if [[ "$service_name" == "service1" || "$service_name" == "service2" || "$service_name" == "service3" ]]; then
+          echo "Valid service name: $service_name"
+          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+        else
+          echo "Invalid service name: $service_name"
+          exit 1
+        fi
+
     - name: Debug - Show Service to deploy
       run: |
         echo "Service to deploy: $SERVICE_NAME"
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.15'
 
     - name: Setup Google Cloud CLI
       id: 'auth'
