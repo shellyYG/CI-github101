@@ -1,4 +1,4 @@
-name: 'Terraform CI (Deploy)'
+name: 'Deployment'
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
       - dev
       - staging
   pull_request:
+    types:
+      - closed
     branches:
       - main
       - dev
@@ -16,6 +18,7 @@ jobs:
   deploy-docker:
     name: 'deploy-docker'
     runs-on: ubuntu-latest
+    if: github.event_name = 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
     - name: Checkout
@@ -33,36 +36,75 @@ jobs:
     - name: Determine Environment
       id: vars
       run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
-          echo "Current push branch / Current target branch to merge is: main"
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "Current commit branch or Current target branch to merge is: main"
           echo "##[set-output name=project;]terraform-github-actions"
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.pull_request.base.ref }}" == "dev" ]]; then
-          echo "Current push branch / Current target branch to merge is: dev"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          echo "Current commit branch / Current target branch to merge is: dev"
           echo "##[set-output name=project;]terraform-github-actions"
-        elif [[ "${{ github.ref }}" == "refs/heads/staging" || "${{ github.event.pull_request.base.ref }}" == "staging" ]]; then
-          echo "Current push branch / Current target branch to merge is: staging"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          echo "Current commit branch / Current target branch to merge is: staging"
           echo "##[set-output name=project;]terraform-github-actions"
         else
           echo "Not a deployable branch"
           echo "##[set-output name=project;]none"
+        echo "Project ID (Environment): ${{ steps.vars.outputs.project }}"
         fi
-
-    - name: Check project ID
-      run: |
-        echo "Project ID: ${{ steps.vars.outputs.project }}"
+      
+    - name: Extract Service Name
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            title="${{ github.event.pull_request.title }}"
+          else
+            title=$(git log --format=%B -n 1 ${{ github.sha }})
+          fi
+          service_name=$(echo "$title" | awk -F': ' '{print $1}')
+          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+          echo "Service to deploy: ${SERVICE_NAME}"
 
     - name: Setup Google Cloud CLI
-      id: auth
-      if: steps.vars.outputs.project != 'none'
-      run: |
-        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > gcp-key.json
-        gcloud auth activate-service-account --key-file=gcp-key.json
-        gcloud config set project ${{ env.GCP_PROJECT }}
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        GCP_PROJECT: ${{ steps.vars.outputs.project }}
+      id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-  terraform-ci:
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v1'
+
+    - name: Debug - Show current directory
+      run: pwd
+
+    - name: Debug - List files
+      run: ls -l
+
+    - name: Deploy Docker Image to GCP Artifact Registry
+      run: |
+        chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
+        ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
+
+
+    - name: Set Git identity to GitHub Action
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Checkout to current branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
+    - name: Change Docker Image Digest in Terraform file
+      run: |
+        sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
+
+    - name: Commit and Push Changes
+      run: |
+        git add ./environments/dev/main.tf
+        git commit -m "Update Docker image digest"
+        git push origin ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
+
+  deploy-terraform:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
     needs: deploy-docker
