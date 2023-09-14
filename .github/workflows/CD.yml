@@ -43,7 +43,6 @@ jobs:
           echo "Not a deployable branch"
           echo "##[set-output name=project;]none"
         fi
-        echo "Project ID (Environment): ${{ steps.vars.outputs.project }}"
     
     - name: Debug - Show Environment to deploy
       run: |
@@ -56,7 +55,9 @@ jobs:
         else
           title=$(git log --format=%B -n 1 ${{ github.sha }})
         fi
+        echo "Title: $title"
         service_name=$(echo "$title" | awk -F': ' '{print $1}' | tr -d '[:space:]')
+        echo "Intermediate service name: $service_name"
         echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
 
     - name: Debug - Show Service to deploy
