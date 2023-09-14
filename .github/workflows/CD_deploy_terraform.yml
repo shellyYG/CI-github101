@@ -12,7 +12,6 @@ jobs:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
     if: github.actor == 'action-user'
-    needs: deploy-docker
 
     steps:
     - name: Checkout
