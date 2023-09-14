@@ -23,8 +23,35 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Extract Service Name from title
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          title="${{ github.event.pull_request.title }}"
+        else
+          title=$(git log --format=%B -n 1 ${{ github.sha }})
+        fi
+        first_line=$(echo "$title" | head -n1)
+        service_name=$(echo "$first_line" | awk -F': ' '{print $1}' | tr -d '[:space:]')
+        echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+
+        # Validate the service name
+        if [[ "$service_name" == "service1" || "$service_name" == "service2" || "$service_name" == "service3" ]]; then
+          echo "Valid service name: $service_name"
+          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+          echo "VALID_SERVICE=true" >> $GITHUB_ENV
+        else
+          echo "Invalid service name: $service_name"
+          echo "VALID_SERVICE=false" >> $GITHUB_ENV
+        fi
+
+    - name: Debug - Show Service to deploy
+      if: env.VALID_SERVICE == 'true'
+      run: |
+        echo "Service to deploy: $SERVICE_NAME"
+
     - name: Determine Environment
       id: vars
+      if: env.VALID_SERVICE == 'true'
       run: |
         if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
           echo "Current commit branch or Current target branch to merge is: main"
@@ -41,75 +68,63 @@ jobs:
         fi
     
     - name: Debug - Show Environment to deploy
+      if: env.VALID_SERVICE == 'true'
       run: |
         echo "Environment to deploy: ${{ steps.vars.outputs.project }}"
 
-    - name: Extract Service Name from title
-      run: |
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          title="${{ github.event.pull_request.title }}"
-        else
-          title=$(git log --format=%B -n 1 ${{ github.sha }})
-        fi
-        echo "Title: $title"
-        first_line=$(echo "$title" | head -n1)
-        service_name=$(echo "$first_line" | awk -F': ' '{print $1}' | tr -d '[:space:]')
-        echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
-
-        # Validate the service name
-        if [[ "$service_name" == "service1" || "$service_name" == "service2" || "$service_name" == "service3" ]]; then
-          echo "Valid service name: $service_name"
-          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
-        else
-          echo "Invalid service name: $service_name"
-          exit 0
-        fi
-
-    - name: Debug - Show Service to deploy
-      run: |
-        echo "Service to deploy: $SERVICE_NAME"
+    
 
     - name: Set up Go
+      if: env.VALID_SERVICE == 'true'
       uses: actions/setup-go@v4
       with:
         go-version: '1.15'
 
     - name: Setup Google Cloud CLI
+      if: env.VALID_SERVICE == 'true'
       id: 'auth'
       uses: 'google-github-actions/auth@v1'
       with:
         credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
     - name: Set up Cloud SDK
+      if: env.VALID_SERVICE == 'true'
       uses: 'google-github-actions/setup-gcloud@v1'
 
     - name: Debug - Show current directory
+      if: env.VALID_SERVICE == 'true'
       run: pwd
 
     - name: Debug - List files
+      if: env.VALID_SERVICE == 'true'
       run: ls -l
 
     - name: Deploy Docker Image to GCP Artifact Registry
+      if: env.VALID_SERVICE == 'true'
       run: |
         chmod +x ./deploy.sh  # github actions start by default in the workspace direction, which is current repository
         ./deploy.sh -s sample-service -p ${{ steps.vars.outputs.project }}
 
 
     - name: Set Git identity to GitHub Action
+      if: env.VALID_SERVICE == 'true'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
 
     - name: Checkout to current branch
+      if: env.VALID_SERVICE == 'true'
       uses: actions/checkout@v3
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
     - name: Change Docker Image Digest in Terraform file
+      if: env.VALID_SERVICE == 'true'
       run: |
         sed -i 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf # syntax difference. In mac it would be: sed -i '' 's/test-bucket-random-001123/test2/g' ./environments/dev/main.tf
 
     - name: Commit and Push Changes
+      if: env.VALID_SERVICE == 'true'
       run: |
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
