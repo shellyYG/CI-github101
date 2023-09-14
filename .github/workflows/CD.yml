@@ -48,11 +48,19 @@ jobs:
         else
           echo "Not a deployable branch"
           echo "##[set-output name=project;]none"
+        echo "Project ID (Environment): ${{ steps.vars.outputs.project }}"
         fi
-
-    - name: Check project ID
-      run: |
-        echo "Project ID: ${{ steps.vars.outputs.project }}"
+      
+    - name: Extract Service Name
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            title="${{ github.event.pull_request.title }}"
+          else
+            title=$(git log --format=%B -n 1 ${{ github.sha }})
+          fi
+          service_name=$(echo "$title" | awk -F': ' '{print $1}')
+          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+          echo "Service to deploy: ${SERVICE_NAME}"
 
     - name: Setup Google Cloud CLI
       id: 'auth'
@@ -60,7 +68,7 @@ jobs:
       with:
         credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-    - name: 'Set up Cloud SDK'
+    - name: Set up Cloud SDK
       uses: 'google-github-actions/setup-gcloud@v1'
 
     - name: Debug - Show current directory
