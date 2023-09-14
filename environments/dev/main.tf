@@ -18,7 +18,7 @@ locals {
 }
 
 resource "google_storage_bucket" "gcs_bucket" {
-  name = "test-bucket-random-001123"
+  name = "test2"
   location = "europe-west2"
   project = local.project
 }
