@@ -1,13 +1,13 @@
 name: 'Deploy Terraform'
 
-on:
-  push:
-    branches:
-      - main
-      - dev
-      - staging
+on: [push]
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Actor who initiated this run is ${{ github.actor }}"
+
   deploy-terraform:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
