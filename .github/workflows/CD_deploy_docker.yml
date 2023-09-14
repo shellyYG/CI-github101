@@ -1,4 +1,4 @@
-name: 'Deployment'
+name: 'Deploy Docker'
 
 on:
   push:
@@ -134,54 +134,3 @@ jobs:
         git push origin ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
 
-  deploy-terraform:
-    name: 'deploy-terraform'
-    runs-on: ubuntu-latest
-    needs: deploy-docker
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Setup Terraform CLI on the runner
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Debug
-      run: |
-        echo "GitHub Ref: ${{ github.ref }}"
-        echo "GitHub Event: ${{ github.event_name }}"
-
-    - name: Determine Environment
-      id: vars
-      run: |
-        if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.base.ref }}" == "main" ]]; then
-          echo "Current push branch / Current target branch to merge is: main"
-          echo "##[set-output name=env;]production"
-        elif [[ "${{ github.ref }}" == "refs/heads/dev" || "${{ github.event.pull_request.base.ref }}" == "dev" ]]; then
-          echo "Current push branch / Current target branch to merge is: dev"
-          echo "##[set-output name=env;]dev"
-        elif [[ "${{ github.ref }}" == "refs/heads/staging" || "${{ github.event.pull_request.base.ref }}" == "staging" ]]; then
-          echo "Current push branch / Current target branch to merge is: staging"
-          echo "##[set-output name=env;]staging"
-        else
-          echo "Not a deployable branch"
-          echo "##[set-output name=env;]none"
-        fi
-
-    - name: Terraform Plan after PR opened (before merged)
-      if: github.event_name == 'pull_request'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-        terraform plan
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-    - name: Terraform Apply after PR merged
-      if: github.event_name == 'push' && steps.vars.outputs.env != 'none'
-      run: |
-        cd environments/${{ steps.vars.outputs.env }}
-        terraform init
-        terraform apply -auto-approve
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
