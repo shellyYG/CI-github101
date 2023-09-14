@@ -52,15 +52,15 @@ jobs:
         fi
       
     - name: Extract Service Name
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            title="${{ github.event.pull_request.title }}"
-          else
-            title=$(git log --format=%B -n 1 ${{ github.sha }})
-          fi
-          service_name=$(echo "$title" | awk -F': ' '{print $1}')
-          echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
-          echo "Service to deploy: ${SERVICE_NAME}"
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          title="${{ github.event.pull_request.title }}"
+        else
+          title=$(git log --format=%B -n 1 ${{ github.sha }})
+        fi
+        service_name=$(echo "$title" | awk -F': ' '{print $1}')
+        echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
+        echo "Service to deploy: ${SERVICE_NAME}"
 
     - name: Setup Google Cloud CLI
       id: 'auth'
