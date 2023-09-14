@@ -27,11 +27,6 @@ jobs:
       with:
         go-version: '1.15'
 
-    - name: Check branch name
-      run: |
-        echo "GitHub Ref: ${{ github.ref }}"
-        echo "GitHub Event: ${{ github.event_name }}"
-
     - name: Determine Environment
       id: vars
       run: |
@@ -50,7 +45,7 @@ jobs:
         fi
         echo "Project ID (Environment): ${{ steps.vars.outputs.project }}"
     
-    - name: Debug - Environment to deploy
+    - name: Debug - Show Environment to deploy
       run: |
         echo "Environment to deploy: ${{ steps.vars.outputs.project }}"
       
@@ -61,10 +56,10 @@ jobs:
         else
           title=$(git log --format=%B -n 1 ${{ github.sha }})
         fi
-        service_name=$(echo "$title" | awk -F': ' '{print $1}')
+        service_name=$(echo "$title" | awk -F': ' '{print $1}' | tr -d '[:space:]')
         echo "SERVICE_NAME=$service_name" >> $GITHUB_ENV
 
-    - name: Debug - Service to deploy
+    - name: Debug - Show Service to deploy
       run: |
         echo "Service to deploy: $SERVICE_NAME"
 
