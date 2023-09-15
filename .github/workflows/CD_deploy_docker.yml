@@ -128,10 +128,10 @@ jobs:
     - name: Commit and Push Changes
       if: env.VALID_SERVICE == 'true'
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
-        git push origin HEAD:main
+        git push
 
 
