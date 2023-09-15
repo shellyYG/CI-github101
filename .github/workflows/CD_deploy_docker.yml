@@ -132,5 +132,6 @@ jobs:
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
         git push https://${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}@github.com/shellyYG/CI-github101.git HEAD:main
+        git log -1
 
 
