@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
-      
+
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     steps:
     - name: Checkout
@@ -131,6 +131,8 @@ jobs:
         awk -v hash="$NEW_IMAGE_HASH" '/resource "google_storage_bucket" "gcs_bucket"/,/}/ { if(/name\s+=\s+/) { sub(/sha256:[^"]*/, "sha256:" hash); } }1' ./environments/dev/main.tf > ./environments/dev/main.tmp && mv ./environments/dev/main.tmp ./environments/dev/main.tf
 
     - name: Commit and Push Changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
       if: env.VALID_SERVICE == 'true'
       run: |
         git add ./environments/dev/main.tf
