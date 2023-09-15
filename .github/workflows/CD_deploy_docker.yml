@@ -22,6 +22,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
 
     - name: Extract Service Name from title
       run: |
@@ -131,14 +133,6 @@ jobs:
       run: |
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
-    
-    - name: Unset existing git credentials
-      run: git remote remove origin
-    
-    - name: Re-add remote with PAT
-      run: git remote add origin https://${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}@github.com/shellyYG/CI-github101.git
-
-    - name: Push changes
-      run: git push origin HEAD:main
+        git push origin HEAD:main
 
 
