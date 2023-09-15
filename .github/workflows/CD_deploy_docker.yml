@@ -124,7 +124,7 @@ jobs:
     - name: Change Image Digest in Terraform file
       if: env.VALID_SERVICE == 'true'
       run: |
-        awk -v hash="$NEW_IMAGE_HASH" '/resource "google_storage_bucket" "gcs_bucket"/,/}/ { if(/name\s+=\s+/) { sub(/@sha256:.*/, "@sha256:" hash); } }1' ./environments/dev/main.tf > ./environments/dev/main.tmp && mv ./environments/dev/main.tmp ./environments/dev/main.tf
+        awk -v hash="$NEW_IMAGE_HASH" '/resource "google_storage_bucket" "gcs_bucket"/,/\}/ { if(/name\s+=\s+/) { sub(/@sha256:[^\"]*/, "@sha256:" hash); } }1' ./environments/dev/main.tf > ./environments/dev/main.tmp && mv ./environments/dev/main.tmp ./environments/dev/main.tf
 
     - name: Commit and Push Changes
       if: env.VALID_SERVICE == 'true'
