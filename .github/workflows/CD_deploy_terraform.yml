@@ -1,10 +1,11 @@
 name: 'Deploy Terraform'
 
 on: 
-  workflow_run:
-    workflows: ["Deploy Docker"]
-    types:
-      - completed
+  workflow_dispatch:
+    inputs:
+      proceed:
+        description: 'Type "yes" to proceed'
+        required: true
 
 jobs:
   debug:
@@ -54,7 +55,7 @@ jobs:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Terraform Apply
-      if: github.event_name == 'push' && steps.vars.outputs.env != 'none'
+      if: github.event.inputs.proceed == 'yes'
       run: |
         cd environments/${{ steps.vars.outputs.env }}
         terraform init
