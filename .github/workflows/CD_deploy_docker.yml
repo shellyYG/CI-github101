@@ -131,6 +131,6 @@ jobs:
       run: |
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
-        git push origin ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+        git push https://${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}@github.com/owner/repo.git HEAD:branch-name
 
 

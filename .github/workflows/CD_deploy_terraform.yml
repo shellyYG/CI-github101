@@ -1,11 +1,6 @@
 name: 'Deploy Terraform'
 
-on: 
-  workflow_dispatch:
-    inputs:
-      proceed:
-        description: 'Type "yes" to proceed'
-        required: true
+on: [push]
 
 jobs:
   debug:
@@ -16,6 +11,7 @@ jobs:
   deploy-terraform:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
+    if: github.actor == 'actions-user'
 
     steps:
     - name: Checkout
