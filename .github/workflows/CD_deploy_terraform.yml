@@ -1,6 +1,10 @@
 name: 'Deploy Terraform'
 
-on: [push]
+on: 
+  workflow_run:
+    workflows: ["Deploy Docker"]
+    types:
+      - completed
 
 jobs:
   debug:
