@@ -18,8 +18,6 @@ jobs:
   deploy-docker:
     name: 'deploy-docker'
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
 
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     steps:
@@ -115,11 +113,6 @@ jobs:
       if: env.VALID_SERVICE == 'true'
       run: echo "NEW_IMAGE_HASH=newHash" >> $GITHUB_ENV # echo "NEW_IMAGE_HASH=$(cat ./file.txt)" >> $GITHUB_ENV
 
-    - name: Set Git identity to GitHub Action
-      if: env.VALID_SERVICE == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
 
     - name: Checkout to current branch
       if: env.VALID_SERVICE == 'true'
@@ -133,10 +126,10 @@ jobs:
         awk -v hash="$NEW_IMAGE_HASH" '/resource "google_storage_bucket" "gcs_bucket"/,/}/ { if(/name\s+=\s+/) { sub(/sha256:[^"]*/, "sha256:" hash); } }1' ./environments/dev/main.tf > ./environments/dev/main.tmp && mv ./environments/dev/main.tmp ./environments/dev/main.tf
 
     - name: Commit and Push Changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
       if: env.VALID_SERVICE == 'true'
       run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
         git add ./environments/dev/main.tf
         git commit -m "Update Docker image digest"
         git push origin HEAD:main
