@@ -18,7 +18,7 @@ locals {
 }
 
 resource "google_storage_bucket" "gcs_bucket" {
-  name = "sha256:test2"
+  name = "sha256:newHash"
   location = "europe-west2"
   project = local.project
 }
