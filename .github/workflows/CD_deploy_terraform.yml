@@ -15,7 +15,6 @@ jobs:
   deploy-terraform:
     name: 'deploy-terraform'
     runs-on: ubuntu-latest
-    if: github.actor == 'actions-user'
 
     steps:
     - name: Checkout
