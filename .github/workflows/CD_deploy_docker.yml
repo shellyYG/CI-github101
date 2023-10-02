@@ -117,7 +117,7 @@ jobs:
       run: echo "NEW_IMAGE_HASH=newHash" >> $GITHUB_ENV # echo "NEW_IMAGE_HASH=$(cat ./file.txt)" >> $GITHUB_ENV
 
 
-    - name: Checkout to current branch
+    - name: Checkout to current branch with commit key
       if: env.VALID_SERVICE == 'true'
       uses: actions/checkout@v3
       with:
